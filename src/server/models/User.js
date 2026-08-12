@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema({
   companyName: {
     type: String,
     required: [true, 'Company Name is required']
+  },
+  savedCompanyNames: {
+    type: [String],
+    default: []
   }
 }, {
   timestamps: true

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { getSavedCompanies, saveCompanyName } from '../services/companyService';
+import CompanyAutocomplete from './CompanyAutocomplete';
 
 const WorkForm = ({ onSubmit, isLoading }) => {
   const [savedCompanies, setSavedCompanies] = useState([]);
@@ -38,6 +39,13 @@ const WorkForm = ({ onSubmit, isLoading }) => {
     }));
   };
 
+  const handleCompanyBlur = () => {
+    const trimmed = formData.companyName?.trim();
+    if (!trimmed) return;
+    const updated = saveCompanyName(trimmed);
+    setSavedCompanies(updated);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     saveCompanyName(formData.companyName);
@@ -70,21 +78,14 @@ const WorkForm = ({ onSubmit, isLoading }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Client Company Name *</label>
-            <input
-              type="text"
+            <CompanyAutocomplete
               name="companyName"
-              list="savedCompanies"
-              required
               value={formData.companyName}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+              required
               placeholder="e.g. ABC Pvt Ltd"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
             />
-            <datalist id="savedCompanies">
-              {savedCompanies.map((company) => (
-                <option key={company} value={company} />
-              ))}
-            </datalist>
           </div>
           
           <div className="space-y-2">

@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import workRoutes from './routes/workRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import companyRoutes from './routes/companyRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -22,6 +23,7 @@ app.use(express.json());
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/work', workRoutes);
+app.use('/api/companies', companyRoutes);
 
 // Production Serving of React App
 if (process.env.NODE_ENV === 'production') {
