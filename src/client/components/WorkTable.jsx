@@ -32,6 +32,7 @@ const WorkTable = ({ works, onEdit, onDelete }) => {
               <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Qty</th>
               <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Rate</th>
               <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+              <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Paid</th>
               <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
@@ -46,7 +47,12 @@ const WorkTable = ({ works, onEdit, onDelete }) => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">₹{work.rate.toLocaleString('en-IN')}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">₹{work.amount.toLocaleString('en-IN')}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                  <div className="flex items-center justify-center space-x-3">
+                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${work.paid ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                    {work.paid ? 'Paid' : 'Unpaid'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                  <div className="flex items-center justify-center space-x-2">
                     <button 
                       onClick={() => onEdit(work)}
                       className="text-blue-600 hover:text-blue-900 bg-blue-50 p-1.5 rounded hover:bg-blue-100 transition-colors"
@@ -70,6 +76,7 @@ const WorkTable = ({ works, onEdit, onDelete }) => {
             <tr>
               <td colSpan="6" className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">Total Amount:</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">₹{totalAmount.toLocaleString('en-IN')}</td>
+              <td></td>
               <td></td>
             </tr>
           </tfoot>

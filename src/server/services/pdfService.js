@@ -35,12 +35,13 @@ export const generatePDF = (res, data) => {
   // Table structure
   const tableTop = 200;
   const colSr = 50;
-  const colCompany = 90;
-  const colTool = 180;
-  const colDesc = 270;
-  const colQty = 400;
-  const colRate = 440;
-  const colAmount = 490;
+  const colCompany = 80;
+  const colTool = 170;
+  const colDesc = 250;
+  const colQty = 360;
+  const colRate = 400;
+  const colPaid = 450;
+  const colAmount = 500;
   
   doc.font('Helvetica-Bold').fontSize(10);
   drawLine(tableTop - 10);
@@ -49,9 +50,10 @@ export const generatePDF = (res, data) => {
   doc.text('Company', colCompany, tableTop);
   doc.text('Tool', colTool, tableTop);
   doc.text('Description', colDesc, tableTop);
-  doc.text('Qty', colQty, tableTop);
-  doc.text('Rate', colRate, tableTop);
-  doc.text('Amount', colAmount, tableTop);
+  doc.text('Qty', colQty, tableTop, { width: 30, align: 'right' });
+  doc.text('Rate', colRate, tableTop, { width: 40, align: 'right' });
+  doc.text('Paid', colPaid, tableTop, { width: 40, align: 'center' });
+  doc.text('Amount', colAmount, tableTop, { width: 45, align: 'right' });
   
   drawLine(tableTop + 15);
   
@@ -72,6 +74,7 @@ export const generatePDF = (res, data) => {
       doc.text('Description', colDesc, y);
       doc.text('Qty', colQty, y);
       doc.text('Rate', colRate, y);
+      doc.text('Paid', colPaid, y);
       doc.text('Amount', colAmount, y);
       drawLine(y + 15);
       
@@ -90,9 +93,10 @@ export const generatePDF = (res, data) => {
     doc.text(item.companyName, colCompany, y, { width: 80 });
     doc.text(item.toolName, colTool, y, { width: 80 });
     doc.text(item.description, colDesc, y, { width: 120 });
-    doc.text(item.quantity.toString(), colQty, y);
-    doc.text(item.rate.toString(), colRate, y);
-    doc.text(formatCurrency(item.amount), colAmount, y);
+    doc.text(item.quantity.toString(), colQty, y, { width: 30, align: 'right' });
+    doc.text(item.rate.toString(), colRate, y, { width: 40, align: 'right' });
+    doc.text(item.paid ? 'Yes' : 'No', colPaid, y, { width: 40, align: 'center' });
+    doc.text(formatCurrency(item.amount), colAmount, y, { width: 45, align: 'right' });
 
     y += rowHeight + 10;
     drawLine(y - 5);

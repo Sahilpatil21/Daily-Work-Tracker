@@ -8,6 +8,7 @@ import {
   deleteWork,
   downloadDailyPDF
 } from '../controllers/workController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -24,18 +25,18 @@ const validateObjectId = (req, res, next) => {
 };
 
 // Specific routes first (must come before /:id)
-router.get('/date/:date', getWorkByDate);
-router.get('/pdf/:date', downloadDailyPDF);
+router.get('/date/:date', protect, getWorkByDate);
+router.get('/pdf/:date', protect, downloadDailyPDF);
 
 // General routes
 router.route('/')
-  .get(getAllWork)
-  .post(createWork);
+  .get(protect, getAllWork)
+  .post(protect, createWork);
 
-// ID-based routes with validation (must come last)
+// ID-based routes with validation and authorization (must come last)
 router.use('/:id', validateObjectId);
 router.route('/:id')
-  .put(updateWork)
-  .delete(deleteWork);
+  .put(protect, updateWork)
+  .delete(protect, deleteWork);
 
 export default router;

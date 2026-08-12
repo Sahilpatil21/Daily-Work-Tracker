@@ -5,7 +5,7 @@ import { generatePDF } from '../services/pdfService.js';
 // @route   POST /api/work
 export const createWork = async (req, res, next) => {
   try {
-    const { companyName, toolName, description, quantity, rate, workDate } = req.body;
+    const { companyName, toolName, description, quantity, rate, workDate, paid } = req.body;
 
     // Backend validation & calculation
     if (!companyName || !toolName || !description || quantity === undefined || rate === undefined || !workDate) {
@@ -26,11 +26,13 @@ export const createWork = async (req, res, next) => {
     const amount = quantity * rate;
 
     const workEntry = await WorkEntry.create({
+      user: req.user._id,
       companyName,
       toolName,
       description,
       quantity,
       rate,
+      paid: Boolean(paid),
       amount,
       workDate
     });
@@ -49,7 +51,7 @@ export const createWork = async (req, res, next) => {
 // @route   GET /api/work
 export const getAllWork = async (req, res, next) => {
   try {
-    const works = await WorkEntry.find({}).sort({ workDate: -1, createdAt: -1 });
+    const works = await WorkEntry.find({ user: req.user._id }).sort({ workDate: -1, createdAt: -1 });
     res.json({
       success: true,
       data: works
@@ -64,7 +66,7 @@ export const getAllWork = async (req, res, next) => {
 export const getWorkByDate = async (req, res, next) => {
   try {
     const { date } = req.params;
-    const works = await WorkEntry.find({ workDate: date }).sort({ createdAt: -1 });
+    const works = await WorkEntry.find({ user: req.user._id, workDate: date }).sort({ createdAt: -1 });
     
     res.json({
       success: true,
@@ -79,9 +81,9 @@ export const getWorkByDate = async (req, res, next) => {
 // @route   PUT /api/work/:id
 export const updateWork = async (req, res, next) => {
   try {
-    const { companyName, toolName, description, quantity, rate, workDate } = req.body;
+    const { companyName, toolName, description, quantity, rate, workDate, paid } = req.body;
     
-    const workEntry = await WorkEntry.findById(req.params.id);
+    const workEntry = await WorkEntry.findOne({ _id: req.params.id, user: req.user._id });
     
     if (!workEntry) {
       res.status(404);
@@ -104,6 +106,7 @@ export const updateWork = async (req, res, next) => {
     workEntry.quantity = quantity !== undefined ? quantity : workEntry.quantity;
     workEntry.rate = rate !== undefined ? rate : workEntry.rate;
     workEntry.workDate = workDate || workEntry.workDate;
+    workEntry.paid = paid !== undefined ? Boolean(paid) : workEntry.paid;
     
     // Recalculate amount
     workEntry.amount = workEntry.quantity * workEntry.rate;
@@ -124,8 +127,7 @@ export const updateWork = async (req, res, next) => {
 // @route   DELETE /api/work/:id
 export const deleteWork = async (req, res, next) => {
   try {
-    const workEntry = await WorkEntry.findById(req.params.id);
-
+    const workEntry = await WorkEntry.findOne({ _id: req.params.id, user: req.user._id });
     if (!workEntry) {
       res.status(404);
       throw new Error('Work entry not found');
@@ -149,7 +151,7 @@ export const downloadDailyPDF = async (req, res, next) => {
     const { date } = req.params;
     const generatorCompany = req.query.company || 'Daily Work Report';
     
-    const works = await WorkEntry.find({ workDate: date }).sort({ createdAt: -1 });
+    const works = await WorkEntry.find({ user: req.user._id, workDate: date }).sort({ createdAt: -1 });
 
     if (!works || works.length === 0) {
       return res.status(404).json({

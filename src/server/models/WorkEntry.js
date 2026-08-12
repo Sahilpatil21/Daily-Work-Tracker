@@ -1,6 +1,11 @@
 import mongoose from 'mongoose';
 
 const workEntrySchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'User is required']
+  },
   companyName: {
     type: String,
     required: [true, 'Company Name is required']
@@ -22,6 +27,11 @@ const workEntrySchema = new mongoose.Schema({
     type: Number,
     required: [true, 'Rate is required'],
     min: [0, 'Rate must be greater than or equal to 0']
+  },
+  paid: {
+    type: Boolean,
+    required: true,
+    default: false
   },
   amount: {
     type: Number,

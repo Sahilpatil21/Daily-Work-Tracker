@@ -4,10 +4,11 @@ import WorkForm from '../components/WorkForm';
 import SummaryCards from '../components/SummaryCards';
 import WorkTable from '../components/WorkTable';
 import DateFilter from '../components/DateFilter';
-import { EditWorkModal, DeleteConfirmModal, CompanyNameModal } from '../components/Modals';
+import { EditWorkModal, DeleteConfirmModal, CompanyNameModal, ProfileModal } from '../components/Modals';
 import * as workService from '../services/workService';
+import { updateMe } from '../services/authService';
 
-const Dashboard = () => {
+const Dashboard = ({ user, onLogout, onUserUpdate }) => {
   const [works, setWorks] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [isLoading, setIsLoading] = useState(false);
@@ -15,24 +16,45 @@ const Dashboard = () => {
   
   const [editingWork, setEditingWork] = useState(null);
   const [deletingWork, setDeletingWork] = useState(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   
-  const [companyName, setCompanyName] = useState('S D TOOLS');
+  const [companyName, setCompanyName] = useState(user?.companyName || '');
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
 
   useEffect(() => {
-    // Check local storage for company name
     const storedName = localStorage.getItem('userCompanyName');
     if (storedName) {
       setCompanyName(storedName);
+    } else if (user?.companyName) {
+      setCompanyName(user.companyName);
+      localStorage.setItem('userCompanyName', user.companyName);
     } else {
       setIsCompanyModalOpen(true);
     }
-  }, []);
+  }, [user]);
 
   const handleSaveCompanyName = (name) => {
     setCompanyName(name);
     localStorage.setItem('userCompanyName', name);
     setIsCompanyModalOpen(false);
+  };
+
+  const handleSaveProfile = async (profileData) => {
+    try {
+      setIsLoading(true);
+      const response = await updateMe(profileData);
+      if (response.success) {
+        onUserUpdate(response.data);
+        setCompanyName(response.data.companyName);
+        localStorage.setItem('userCompanyName', response.data.companyName);
+        setIsProfileModalOpen(false);
+      }
+    } catch (error) {
+      console.error('Failed to update profile', error);
+      alert(error.response?.data?.message || 'Failed to update profile.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const fetchWorksByDate = async (date) => {
@@ -111,9 +133,24 @@ const Dashboard = () => {
     }
   };
 
-  const handleDownloadPDF = () => {
-    const url = workService.getDailyPDFUrl(selectedDate, companyName);
-    window.open(url, '_blank');
+  const handleDownloadPDF = async () => {
+    try {
+      setIsLoading(true);
+      const pdfBlob = await workService.downloadDailyPDF(selectedDate, companyName);
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Daily_Work_Report_${selectedDate}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download PDF', error);
+      alert(error.response?.data?.message || 'Failed to download PDF.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Calculate summaries
@@ -123,7 +160,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar companyName={companyName} onEditCompany={() => setIsCompanyModalOpen(true)} />
+      <Navbar companyName={companyName} userName={user?.name} onEditProfile={() => setIsProfileModalOpen(true)} onLogout={onLogout} />
       
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
@@ -190,6 +227,14 @@ const Dashboard = () => {
         }}
         onSave={handleSaveCompanyName}
         defaultName={companyName}
+      />
+
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        onSave={handleSaveProfile}
+        user={user}
+        isLoading={isLoading}
       />
     </div>
   );

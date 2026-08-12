@@ -1,17 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { PlusCircle } from 'lucide-react';
+import { getSavedCompanies, saveCompanyName } from '../services/companyService';
 
 const WorkForm = ({ onSubmit, isLoading }) => {
+  const [savedCompanies, setSavedCompanies] = useState([]);
   const [formData, setFormData] = useState({
     companyName: '',
     toolName: '',
     description: '',
     quantity: '',
     rate: '',
-    workDate: new Date().toISOString().split('T')[0]
+    workDate: new Date().toISOString().split('T')[0],
+    paid: false
   });
 
   const [amount, setAmount] = useState(0);
+
+  useEffect(() => {
+    const companies = getSavedCompanies();
+    setSavedCompanies(companies);
+    if (!formData.companyName && companies.length > 0) {
+      setFormData(prev => ({ ...prev, companyName: companies[0] }));
+    }
+  }, []);
 
   useEffect(() => {
     const qty = parseFloat(formData.quantity) || 0;
@@ -20,28 +31,31 @@ const WorkForm = ({ onSubmit, isLoading }) => {
   }, [formData.quantity, formData.rate]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    saveCompanyName(formData.companyName);
     onSubmit({
       ...formData,
       quantity: Number(formData.quantity),
       rate: Number(formData.rate)
     });
-    // Reset form after submit except date
+    const companies = getSavedCompanies();
+    setSavedCompanies(companies);
     setFormData(prev => ({
-      companyName: '',
+      companyName: companies[0] || '',
       toolName: '',
       description: '',
       quantity: '',
       rate: '',
-      workDate: prev.workDate
+      workDate: prev.workDate,
+      paid: false
     }));
   };
 
@@ -59,12 +73,18 @@ const WorkForm = ({ onSubmit, isLoading }) => {
             <input
               type="text"
               name="companyName"
+              list="savedCompanies"
               required
               value={formData.companyName}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
               placeholder="e.g. ABC Pvt Ltd"
             />
+            <datalist id="savedCompanies">
+              {savedCompanies.map((company) => (
+                <option key={company} value={company} />
+              ))}
+            </datalist>
           </div>
           
           <div className="space-y-2">
@@ -133,7 +153,19 @@ const WorkForm = ({ onSubmit, isLoading }) => {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
             />
           </div>
-          
+
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              name="paid"
+              id="paid"
+              checked={formData.paid}
+              onChange={handleChange}
+              className="h-4 w-4 text-brand-600 border-gray-300 rounded"
+            />
+            <label htmlFor="paid" className="text-sm font-medium text-gray-700">Paid</label>
+          </div>
+
           <div className="flex flex-col justify-end">
             <div className="bg-brand-50 rounded-lg px-4 py-3 border border-brand-100 mb-2">
               <span className="block text-xs font-medium text-brand-600 mb-1 uppercase tracking-wider">Calculated Amount</span>

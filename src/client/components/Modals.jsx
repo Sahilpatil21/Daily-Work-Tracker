@@ -8,7 +8,8 @@ export const EditWorkModal = ({ isOpen, onClose, work, onSave, isLoading }) => {
     description: '',
     quantity: '',
     rate: '',
-    workDate: ''
+    workDate: '',
+    paid: false
   });
 
   const [amount, setAmount] = useState(0);
@@ -21,7 +22,8 @@ export const EditWorkModal = ({ isOpen, onClose, work, onSave, isLoading }) => {
         description: work.description,
         quantity: work.quantity,
         rate: work.rate,
-        workDate: work.workDate
+        workDate: work.workDate,
+        paid: Boolean(work.paid)
       });
     }
   }, [work]);
@@ -35,10 +37,10 @@ export const EditWorkModal = ({ isOpen, onClose, work, onSave, isLoading }) => {
   if (!isOpen || !work) return null;
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -47,7 +49,8 @@ export const EditWorkModal = ({ isOpen, onClose, work, onSave, isLoading }) => {
     onSave(work._id, {
       ...formData,
       quantity: Number(formData.quantity),
-      rate: Number(formData.rate)
+      rate: Number(formData.rate),
+      paid: Boolean(formData.paid)
     });
   };
 
@@ -89,6 +92,10 @@ export const EditWorkModal = ({ isOpen, onClose, work, onSave, isLoading }) => {
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Work Date *</label>
                 <input type="date" name="workDate" required value={formData.workDate} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500" />
+              </div>
+              <div className="flex items-center space-x-3">
+                <input type="checkbox" name="paid" id="paid" checked={formData.paid} onChange={handleChange} className="h-4 w-4 text-brand-600 border-gray-300 rounded" />
+                <label htmlFor="paid" className="text-sm font-medium text-gray-700">Paid</label>
               </div>
               <div className="flex flex-col justify-end">
                 <div className="bg-brand-50 rounded-lg px-4 py-3 border border-brand-100">
@@ -178,6 +185,102 @@ export const CompanyNameModal = ({ isOpen, onClose, onSave, defaultName }) => {
             <button type="submit" className="w-full px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl transition-all shadow-md hover:shadow-lg">
               Continue
             </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const ProfileModal = ({ isOpen, onClose, onSave, user, isLoading }) => {
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    companyName: user?.companyName || '',
+    password: ''
+  });
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        companyName: user.companyName || '',
+        password: ''
+      });
+    }
+  }, [user]);
+
+  if (!isOpen) return null;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const updateData = {
+      name: formData.name,
+      companyName: formData.companyName
+    };
+    if (formData.password.trim()) {
+      updateData.password = formData.password;
+    }
+    onSave(updateData);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+        <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={onClose}></div>
+        <div className="relative inline-block w-full max-w-lg overflow-hidden text-left align-bottom transition-all transform bg-white rounded-xl shadow-xl sm:my-8 sm:align-middle text-gray-900">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <h3 className="text-lg font-semibold text-gray-900">Edit Profile</h3>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-500 transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+              <input
+                type="text"
+                name="name"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                className="block w-full rounded-2xl border border-gray-300 px-4 py-3 text-gray-900 focus:border-brand-500 focus:ring-brand-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+              <input
+                type="text"
+                name="companyName"
+                required
+                value={formData.companyName}
+                onChange={handleChange}
+                className="block w-full rounded-2xl border border-gray-300 px-4 py-3 text-gray-900 focus:border-brand-500 focus:ring-brand-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="block w-full rounded-2xl border border-gray-300 px-4 py-3 text-gray-900 focus:border-brand-500 focus:ring-brand-500"
+                placeholder="Leave blank to keep current password"
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <button type="button" onClick={onClose} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                Cancel
+              </button>
+              <button type="submit" disabled={isLoading} className="px-6 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-70">
+                {isLoading ? 'Saving...' : 'Save'}
+              </button>
+            </div>
           </form>
         </div>
       </div>
