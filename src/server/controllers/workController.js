@@ -182,3 +182,57 @@ export const downloadDailyPDF = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Get tool name suggestions by company
+// @route   GET /api/work/suggestions/tools
+export const getToolNamesSuggestions = async (req, res, next) => {
+  try {
+    const { company } = req.query;
+    
+    if (!company) {
+      return res.json({
+        success: true,
+        data: []
+      });
+    }
+
+    const toolNames = await WorkEntry.distinct('toolName', {
+      user: req.user._id,
+      companyName: company
+    });
+
+    res.json({
+      success: true,
+      data: toolNames
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get description suggestions by company
+// @route   GET /api/work/suggestions/descriptions
+export const getDescriptionsSuggestions = async (req, res, next) => {
+  try {
+    const { company } = req.query;
+    
+    if (!company) {
+      return res.json({
+        success: true,
+        data: []
+      });
+    }
+
+    const descriptions = await WorkEntry.distinct('description', {
+      user: req.user._id,
+      companyName: company
+    });
+
+    res.json({
+      success: true,
+      data: descriptions
+    });
+  } catch (error) {
+    next(error);
+  }
+};

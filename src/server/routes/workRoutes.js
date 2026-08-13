@@ -6,7 +6,9 @@ import {
   getWorkByDate,
   updateWork,
   deleteWork,
-  downloadDailyPDF
+  downloadDailyPDF,
+  getToolNamesSuggestions,
+  getDescriptionsSuggestions
 } from '../controllers/workController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -27,6 +29,8 @@ const validateObjectId = (req, res, next) => {
 // Specific routes first (must come before /:id)
 router.get('/date/:date', protect, getWorkByDate);
 router.get('/pdf/:date', protect, downloadDailyPDF);
+router.get('/suggestions/tools', protect, getToolNamesSuggestions);
+router.get('/suggestions/descriptions', protect, getDescriptionsSuggestions);
 
 // General routes
 router.route('/')

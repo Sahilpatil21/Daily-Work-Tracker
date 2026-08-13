@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { getSavedCompanies, saveCompanyName } from '../services/companyService';
 import CompanyAutocomplete from './CompanyAutocomplete';
+import ToolAutocomplete from './ToolAutocomplete';
+import DescriptionAutocomplete from './DescriptionAutocomplete';
 
 const WorkForm = ({ onSubmit, isLoading }) => {
   const [savedCompanies, setSavedCompanies] = useState([]);
@@ -21,9 +23,23 @@ const WorkForm = ({ onSubmit, isLoading }) => {
     const companies = getSavedCompanies();
     setSavedCompanies(companies);
     if (!formData.companyName && companies.length > 0) {
-      setFormData(prev => ({ ...prev, companyName: companies[0] }));
+      setFormData(prev => ({ 
+        ...prev, 
+        companyName: companies[0],
+        toolName: companies[0] // Auto-fill tool name with company name
+      }));
     }
   }, []);
+
+  // Auto-fill toolName when companyName changes
+  useEffect(() => {
+    if (formData.companyName) {
+      setFormData(prev => ({
+        ...prev,
+        toolName: formData.companyName
+      }));
+    }
+  }, [formData.companyName]);
 
   useEffect(() => {
     const qty = parseFloat(formData.quantity) || 0;
@@ -56,9 +72,10 @@ const WorkForm = ({ onSubmit, isLoading }) => {
     });
     const companies = getSavedCompanies();
     setSavedCompanies(companies);
+    const defaultCompany = companies[0] || '';
     setFormData(prev => ({
-      companyName: companies[0] || '',
-      toolName: '',
+      companyName: defaultCompany,
+      toolName: defaultCompany, // Set tool name same as company name
       description: '',
       quantity: '',
       rate: '',
@@ -90,28 +107,29 @@ const WorkForm = ({ onSubmit, isLoading }) => {
           
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Tool Name *</label>
-            <input
-              type="text"
+            <ToolAutocomplete
               name="toolName"
-              required
               value={formData.toolName}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+              required
               placeholder="e.g. Drill Machine"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+              companyName={formData.companyName}
             />
           </div>
           
           <div className="space-y-2 md:col-span-2">
             <label className="block text-sm font-medium text-gray-700">Description *</label>
-            <textarea
+            <DescriptionAutocomplete
               name="description"
-              required
-              rows="2"
               value={formData.description}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors resize-none"
+              required
               placeholder="Work details..."
-            ></textarea>
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors resize-none"
+              companyName={formData.companyName}
+              rows={2}
+            />
           </div>
           
           <div className="space-y-2">

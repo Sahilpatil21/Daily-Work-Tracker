@@ -40,3 +40,29 @@ export const getDailyPDFUrl = (date, companyName) => {
   const query = new URLSearchParams({ company: companyName }).toString();
   return `${WORK_URL}/pdf/${date}?${query}`;
 };
+
+// Get suggestions for tool names by company
+export const getToolNamesByCompany = async (companyName) => {
+  try {
+    const response = await apiClient.get(`${WORK_URL}/suggestions/tools`, {
+      params: { company: companyName }
+    });
+    return response.data?.data || [];
+  } catch (error) {
+    console.error('Failed to fetch tool name suggestions:', error);
+    return [];
+  }
+};
+
+// Get suggestions for descriptions by company
+export const getDescriptionsByCompany = async (companyName) => {
+  try {
+    const response = await apiClient.get(`${WORK_URL}/suggestions/descriptions`, {
+      params: { company: companyName }
+    });
+    return response.data?.data || [];
+  } catch (error) {
+    console.error('Failed to fetch description suggestions:', error);
+    return [];
+  }
+};
